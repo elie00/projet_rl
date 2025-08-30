@@ -1,0 +1,53 @@
+============================================================
+EVALUATION REPORT
+============================================================
+
+TRAINED AGENT PERFORMANCE:
+  Average Reward: 21.77 ± 24.83
+  Best Reward: 99.30
+  Worst Reward: 4.40
+  Success Rate: 50.0%
+  Average Episode Length: 194.4
+
+RANDOM BASELINE PERFORMANCE:
+  Average Reward: -7.53 ± 0.84
+  Best Reward: -3.90
+  Worst Reward: -8.70
+  Average Episode Length: 50.0
+
+PERFORMANCE COMPARISON:
+  Reward Improvement: +29.30 (+389.0%)
+  ✓ Agent outperforms random baseline!
+  ✓ Agent achieved 50.0% success rate!
+
+============================================================
+
+Training Configuration:
+PPO Configuration:
+  CLIP_EPSILON: 0.2
+  DEVICE: cpu
+  ENTROPY_COEFF: 0.01
+  ENV_NAME: FlappyBird-v0
+  EVAL_EPISODES: 10
+  EVAL_FREQUENCY: 100
+  GAMMA: 0.99
+  HIDDEN_SIZES: [512, 512, 256]
+  LEARNING_RATE: 0.0003
+  LOG_DIR: logs
+  LOG_FREQUENCY: 200
+  MAX_GRAD_NORM: 0.5
+  MAX_STEPS_PER_ROLLOUT: 512
+  MODEL_DIR: models
+  PPO_EPOCHS: 4
+  RECORD_VIDEO: True
+  RENDER_EVAL: False
+  SAVE_FREQUENCY: 500
+  SEED: 42
+  SUCCESS_THRESHOLD: 10
+  TOTAL_EPISODES: 10000
+  USE_LIDAR: False
+  USE_WANDB: True
+  VALUE_COEFF: 0.5
+  VIDEO_DIR: videos
+  WANDB_ENTITY: None
+  WANDB_PROJECT: flappy-bird-ppo
