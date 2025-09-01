@@ -21,6 +21,7 @@ from utils import (
     evaluate_random_baseline, plot_training_curves, 
     create_evaluation_report, save_model_checkpoint
 )
+from metrics_dashboard import MetricsDashboard, create_dashboard_from_agent
 
 
 def create_environment(config: Config, record_stats: bool = True):
@@ -73,6 +74,9 @@ def train_agent(config: Config, resume_from: str = None):
     run_name = f"ppo_flappy_bird_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     logger = Logger(config, run_name=run_name)
     episode_tracker = EpisodeTracker(window_size=100)
+    
+    # Initialize metrics dashboard
+    dashboard = MetricsDashboard()
     
     # Resume from checkpoint if specified
     start_episode = 0
@@ -128,6 +132,14 @@ def train_agent(config: Config, resume_from: str = None):
                     recent_reward = np.mean(episode_rewards)
                     logger.log_scalar("recent_episode_reward", recent_reward, step=episode)
                 
+                # Collect metrics for dashboard
+                dashboard.collect_metrics(
+                    agent=agent,
+                    episode=episode,
+                    training_stats=training_stats,
+                    environment_info={'config': config.__dict__}
+                )
+                
                 logger.increment_step()
             
             # Print progress
@@ -161,6 +173,15 @@ def train_agent(config: Config, resume_from: str = None):
                 eval_log = {f"eval/{k}": v for k, v in eval_stats.items()}
                 logger.log_scalars(eval_log, step=episode)
                 
+                # Update dashboard with evaluation stats
+                dashboard.collect_metrics(
+                    agent=agent,
+                    episode=episode,
+                    training_stats=training_stats,
+                    evaluation_stats=eval_stats,
+                    environment_info={'config': config.__dict__}
+                )
+                
                 # Log video if recorded
                 if config.RECORD_VIDEO and video_path and os.path.exists(video_path):
                     logger.log_video(video_path, step=episode)
@@ -177,11 +198,19 @@ def train_agent(config: Config, resume_from: str = None):
                     agent.save_model(best_model_path)
                     print(f"New best model saved! Reward: {best_reward:.2f}")
             
-            # Save periodic checkpoints
+            # Save periodic checkpoints and generate dashboard
             if episode > 0 and episode % config.SAVE_FREQUENCY == 0:
                 checkpoint_path = config.get_model_path(episode)
                 episode_stats = episode_tracker.get_stats()
                 save_model_checkpoint(agent, checkpoint_path, episode, episode_stats)
+                
+                # Generate dashboard periodically
+                print(f"Generating dashboard at episode {episode}...")
+                try:
+                    dashboard_path = dashboard.create_comprehensive_dashboard()
+                    print(f"Dashboard generated: {dashboard_path}")
+                except Exception as e:
+                    print(f"Error generating dashboard: {e}")
     
     except KeyboardInterrupt:
         print("\nTraining interrupted by user")
@@ -209,13 +238,25 @@ def train_agent(config: Config, resume_from: str = None):
         final_model_path = os.path.join(config.MODEL_DIR, "final_model.pt")
         agent.save_model(final_model_path)
         
-        # Plot training curves
+        # Generate final dashboard and training curves
         episode_rewards = agent.get_episode_rewards()
         training_stats = agent.get_training_stats()
         
         if episode_rewards:
             plot_path = os.path.join(config.LOG_DIR, "training_curves.png")
             plot_training_curves(episode_rewards, training_stats, save_path=plot_path, show=False)
+        
+        # Generate final comprehensive dashboard
+        print("Generating final comprehensive dashboard...")
+        try:
+            final_dashboard_path = dashboard.create_comprehensive_dashboard()
+            print(f"Final dashboard saved: {final_dashboard_path}")
+            
+            # Export metrics summary
+            summary_path = dashboard.export_metrics_summary()
+            print(f"Metrics summary saved: {summary_path}")
+        except Exception as e:
+            print(f"Error generating final dashboard: {e}")
         
         # Save final report
         report_path = os.path.join(config.LOG_DIR, "training_report.txt")

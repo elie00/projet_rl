@@ -1,0 +1,13 @@
+PPO FLAPPY BIRD - TRAINING SUMMARY
+==================================================
+
+Training Episodes: 20
+Latest Episode: 95
+Final Actor Loss: -0.0011
+Final Critic Loss: 1.5793
+Final Policy Entropy: 0.0567
+
+Performance Analysis:
+Reward Trend Slope: 0.0073
+Learning Efficiency: 0.0037
+Convergence Indicator: 0.0497
